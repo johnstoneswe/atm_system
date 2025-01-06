@@ -11,6 +11,7 @@ typedef struct Transaction {
 typedef struct User {
   int  balance;
   int  pin;
+  char phone_number[15];
   char first_name[20];
   char last_name[20];
 } User;
@@ -25,6 +26,12 @@ int withdraw(User * u, int amount, Transaction * transactions, int trackTransact
 void history(Transaction * transactions, int transactionsLength);
 
 // function to check the balance of a user's account
-void balance(User *u);
+void balance(User * u);
+
+int authenticate_user(User * user, int pin);
+
+void update_pin(User * user, int new_pin);
+
+void send_to_sim(User * user, int amount);
 
 # endif

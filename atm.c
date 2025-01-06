@@ -36,6 +36,12 @@ int main() {
   scanf("%19s", &user.last_name[0]);
   puts("");
 
+  puts("Enter an account pin");
+  scanf("%d", &user.pin);
+
+  puts("Enter your phone number");
+  scanf("%14s", &user.phone_number[0]);
+
   // integer to store a starting balance
   int starting;
 
@@ -65,10 +71,10 @@ int main() {
   // use a while loop to keep the shell active until the user exits
   while(1) {
     // prompt the user to make a transaction on the account
-    puts("Enter an action to continue : deposit, withdraw, history, balance, exit");
+    puts("Enter an action to continue : deposit, withdraw, history, balance, mobile_transfer, change_pin, exit");
 
     // record the action the user enters
-    char action[10];
+    char action[40];
     scanf("%s", &action[0]);
 
     // check the users entered action & commit it, otherwise exit
@@ -108,6 +114,22 @@ int main() {
 
       balance(&user);
 
+    } else if (strcmp(action, "change_pin") == 0) {
+      int new_pin;
+
+      puts("Enter a new pin");
+      scanf("%d", &new_pin);
+
+      update_pin(&user, new_pin);
+
+    } else if (strcmp(action, "mobile_transfer") == 0 ) {
+      int amount;
+
+      puts("Enter the amount you want to transfer to your phone");
+      scanf("%d", amount);
+
+      send_to_sim(&user, amount);
+
     } else if (strcmp(action, "exit") == 0) {
 
       break;
@@ -126,22 +148,28 @@ int main() {
 
 /*
   @deposit Description : Function to deposit cash in the User's account
-  @parameters : User struct u, Transaction array transactions
-  @returns : (void)
+  @param : User struct u,
+  @param : Transactions t - array of transactions
+  @param : int trackTransactions - Integer tracking transactions (will also tell you where the deposit transaction will be placed in t)
+  *@returns : (void)
 */
 void deposit(User * u, int amount, Transaction * transactions, int trackTransactions) {
-  u -> balance += amount;
-  // create a deposit transaction & add it to the transactions array
-  Transaction deposit = {
-    .type = "deposit",
-    .balance = u -> balance
-  };
+  if (amount > 30000) {
+    puts("Maximum amount depositable via ATM is 30000, please visit bank teller.");
+  } else {
+    u -> balance += amount;
+    // create a deposit transaction & add it to the transactions array
+    Transaction deposit = {
+      .type = "deposit",
+      .balance = u -> balance
+    };
 
-  // add the transaction to the array
-  transactions[trackTransactions] = deposit;
+    // add the transaction to the array
+    transactions[trackTransactions] = deposit;
 
-  // print a success message to the user
-  printf("Deposit successful, new balance : %d \n", u -> balance);
+    // print a success message to the user
+    printf("Deposit successful, new balance : %d \n", u -> balance);
+  }
 };
 
 /*
@@ -193,3 +221,33 @@ void history(Transaction * transactions, int transactionsLength) {
 void balance(User * u) {
   printf("Your balance is %d \n", u -> balance);
 };
+
+
+/*
+  Description : Function to send an amount to the user's phone
+*/
+void send_to_sim(User * user, int amount) {
+  if (user -> balance >= amount) {
+    user -> balance -= amount;
+
+    printf("%d, sent to %s, new account balance is %d", amount, user -> phone_number, user -> balance);
+  } else {
+    printf("Amount can't be sent from your account, balance is : %d", user -> balance);
+  }
+}
+
+void update_pin(User * user, int new_pin) {
+  user -> pin = new_pin;
+
+  puts("Your pin has updated successfully");
+}
+
+int authenticate_user(User * user, int pin) {
+  if (pin == user -> pin) {
+    return 0;
+  } else {
+
+    puts("Wrong pin entered; Exit system");
+    return 1;
+  }
+}
